@@ -1,9 +1,13 @@
 .content-wrapper{
     background-color: #065C27;
-    padding-top: 1em;
-    padding-bottom: 1em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
 }
 
-.site-title{
+.site-title:link{
+    color: #77876b;
+}
+
+.site-title:visited{
     color: #77876b;
 }
