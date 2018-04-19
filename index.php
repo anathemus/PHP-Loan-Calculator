@@ -20,7 +20,7 @@
             <div class="content-wrapper">
                 <div class="text-center">
                     <p class="site-title">
-                        <a href="~/index.php">Loan Calculator</a>
+                        <a href="/index.php">Loan Calculator</a>
                     </p>
                 </div>
             </div>
