@@ -4,10 +4,10 @@
     padding-bottom: 0.5em;
 }
 
-.site-title:link{
+.site-title a:link{
     color: #77876b;
 }
 
-.site-title:visited{
+.site-title a:visited{
     color: #77876b;
 }
