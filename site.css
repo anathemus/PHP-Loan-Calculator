@@ -1,9 +1,7 @@
 .content-wrapper{
     background-color: #065C27;
-    color: #77876B;
 }
 
-.margin-auto{
-    width: 100%;
-    margin: auto;
+.site-title{
+    color: #77876b;
 }

@@ -18,7 +18,7 @@
     <body>
         <header>
             <div class="content-wrapper">
-                <div class="margin-auto">
+                <div class="text-center">
                     <p class="site-title">
                         <a href="~/index.php">Loan Calculator</a>
                     </p>
