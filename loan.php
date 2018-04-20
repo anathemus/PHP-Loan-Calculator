@@ -25,6 +25,10 @@
                 </div>
             </div>
         </header>
+        <div class="row"></br></div>
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-8">Number of payments:
         <?php
             $date = $_POST['date-input'];
             $loan = round(floatval($_POST['loan-input']), 2);
@@ -47,16 +51,25 @@
             }
 
             $balance = $loan;
-            $freqinterest = ($interest / $frequency);
+            $freqinterest = (($interest / 100) / $frequency);
 
             for ($totalpayments=0; $balance > 0 ; $totalpayments++) { 
-                    $newBalance = ($balance + $freqinterest);
+                    $newBalance = ($balance + ($balance * $freqinterest));
                     $balance = $newBalance - $installment;
             }
             
             echo $totalpayments;
 
         ?>
-        <a href="/index.php" class="btn btn-primary">Back</a>
+            </div>
+            <div class="col-2"></div>
+        </div>
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-8">
+                <a href="/index.php" class="btn btn-primary">Back</a>
+            </div>
+            <div class="col-2"></div>
+        </div>
     </body>
 </html>
