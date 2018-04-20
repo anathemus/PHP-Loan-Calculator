@@ -32,35 +32,35 @@
         </header>
         <div class="row"></br></div>
         <div class="form-group row">
-            <div class="col-2"></div>
+            <div class="col-0 col-md-2"></div>
             <label for="date-input" class="col-2 col-form-label">Start Date:</label>
             <div class="col-6">
                 <input class="form-control" type="date" value="mm/dd/yyyy" id="date-input" />
             </div>
         </div>
         <div class="form-group row">
-            <div class="col-2"></div>
+            <div class="col-0 col-md-2"></div>
             <label for="loan-input" class="col-2 col-form-label">Loan Amount:</label>
             <div class="col-6">
                 <input class="form-control" type="number" value="XXXX.XX" id="loan-input" />
             </div>
         </div>
         <div class="form-group row">
-            <div class="col-2"></div>
+            <div class="col-0 col-md-2"></div>
             <label for="installment-input" class="col-2 col-form-label">Installment Amount:</label>
             <div class="col-6">
                 <input class="form-control" type="number" value="XXX.XX" id="installment-input" />
             </div>
         </div>
         <div class="form-group row">
-            <div class="col-2"></div>
+            <div class="col-0 col-md-2"></div>
             <label for="interest-input" class="col-2 col-form-label">Interest Rate:</label>
             <div class="col-6">
                 <input class="form-control" type="number" value="XX.XX" id="interest-input" />
             </div>
         </div>
         <div class="form-group row">
-            <div class="col-2"></div>
+            <div class="col-0 col-md-2"></div>
             <label for="installment-select" class="col-2 col-form-label">Installment Frequency:</label>
             <div class="col-6">
                 <select class="form-control" id="installement-select">
