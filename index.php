@@ -14,11 +14,6 @@
         <!-- Latest compiled Bootstrap JavaScript -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
         <link rel="stylesheet" type="text/css" href="site.css" />
-        <script>
-            $( function() {
-            $( "#datepicker" ).datepicker();
-            } );
-        </script>
     </head>
     <body>
         <header>
@@ -30,46 +25,55 @@
                 </div>
             </div>
         </header>
-        <div class="row"></br></div>
-        <div class="form-group row">
-            <div class="col-0 col-md-2"></div>
-            <label for="date-input" class="col-2 col-form-label">Start Date:</label>
-            <div class="col-6">
-                <input class="form-control" type="date" value="mm/dd/yyyy" id="date-input" />
+        <div class="row"><div class="col-12"></br></div></div>
+        <form action="/loan.php" method="POST">
+            <div class="form-group row align-items-center">
+                <div class="col-0 col-md-2"></div>
+                <label for="date-input" class="col-4 col-md-2 col-form-label text-right">Start Date:</label>
+                <div class="col-6">
+                    <input class="form-control" type="date" placeholder="mm/dd/yyyy" id="date-input" name="date-input" />
+                </div>
             </div>
-        </div>
-        <div class="form-group row">
-            <div class="col-0 col-md-2"></div>
-            <label for="loan-input" class="col-2 col-form-label">Loan Amount:</label>
-            <div class="col-6">
-                <input class="form-control" type="number" value="XXXX.XX" id="loan-input" />
+            <div class="form-group row align-items-center">
+                <div class="col-0 col-md-2"></div>
+                <label for="loan-input" class="col-4 col-md-2 col-form-label text-right">Loan Amount:</label>
+                <div class="col-6">
+                    <input class="form-control" type="number" placeholder="XXXX.XX" id="loan-input" name="loan-input" />
+                </div>
             </div>
-        </div>
-        <div class="form-group row">
-            <div class="col-0 col-md-2"></div>
-            <label for="installment-input" class="col-2 col-form-label">Installment Amount:</label>
-            <div class="col-6">
-                <input class="form-control" type="number" value="XXX.XX" id="installment-input" />
+            <div class="form-group row align-items-center">
+                <div class="col-0 col-md-2"></div>
+                <label for="installment-input" class="col-4 col-md-2 col-form-label text-right">Installment Amount:</label>
+                <div class="col-6">
+                    <input class="form-control" type="number" placeholder="XXX.XX" id="installment-input" name="installment-input" />
+                </div>
             </div>
-        </div>
-        <div class="form-group row">
-            <div class="col-0 col-md-2"></div>
-            <label for="interest-input" class="col-2 col-form-label">Interest Rate:</label>
-            <div class="col-6">
-                <input class="form-control" type="number" value="XX.XX" id="interest-input" />
+            <div class="form-group row align-items-center">
+                <div class="col-0 col-md-2"></div>
+                <label for="interest-input" class="col-4 col-md-2 col-form-label text-right">Interest Rate:</label>
+                <div class="col-6">
+                    <input class="form-control" type="number" placeholder="XX.XX" id="interest-input" name="interest-input" />
+                </div>
             </div>
-        </div>
-        <div class="form-group row">
-            <div class="col-0 col-md-2"></div>
-            <label for="installment-select" class="col-2 col-form-label">Installment Frequency:</label>
-            <div class="col-6">
-                <select class="form-control" id="installement-select">
-                    <option>Monthly</option>
-                    <option>Weekly</option>
-                    <option>Daily</option>
-                </select>
+            <div class="form-group row align-items-center">
+                <div class="col-0 col-md-2"></div>
+                <label for="installment-select" class="col-4 col-md-2 col-form-label text-right">Installment Frequency:</label>
+                <div class="col-6">
+                    <select class="form-control" id="installement-select" name="installment-select">
+                        <option>Monthly</option>
+                        <option>Weekly</option>
+                        <option>Daily</option>
+                    </select>
+                </div>
             </div>
-        </div>
+            <div class="form-group row align-items-center">
+                <div class="col-2 col-md-4"></div>
+                <div class="col-4 col-md-4">
+                    <input class="btn btn-primary" type="submit" value="Submit" />
+                </div>
+                <div class="col-6 col-md-4"></div>
+            </div>
+        </form>
     <?php
 
     ?>
