@@ -5,6 +5,7 @@ body
 
 .content-wrapper{
     background-color: #065C27;
+    width: 100%;
 }
 
 .site-title
@@ -14,14 +15,19 @@ body
 }
 
 .site-title a:link{
-    color: #77876b;
+    color: #a4ac99;
 }
 
 .site-title a:visited{
-    color: #77876b;
+    color: #a4ac99;
 }
 
 .text-right
 {
     text-align: right;
+}
+
+.date-height
+{
+    height: 1em;
 }

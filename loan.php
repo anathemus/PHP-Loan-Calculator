@@ -30,7 +30,7 @@
             <div class="col-2"></div>
             <div class="col-8">Number of payments:
         <?php
-            $date = $_POST['date-input'];
+            $date = date($_POST['date-input']);
             $loan = round(floatval($_POST['loan-input']), 2);
             $installment = round(floatval($_POST['installment-input']), 2);
             $interest = floatval($_POST['interest-input']);
@@ -60,6 +60,22 @@
             
             echo $totalpayments;
 
+            // https://www.googleapis.com/calendar/v3/calendars/en.us%40holiday.calendar.google.com/events?key=AIzaSyD_WrkVGqA8L5SUyY1QSHrwSHs_rRScOgU
+            $xml = simplexml_load_file("https://calendar.google.com/calendar/htmlembed?src=en.usa%23holiday%40group.v.calendar.google.com&amp;ctz=America%2FNew_York");
+            $xml->asXML();
+            $holidays = array();
+            
+            foreach ($xml->entry as $entry){
+                $a = $entry->children('http://schemas.google.com/g/2005');
+                $when = $a->when->attributes()->startTime;
+
+                $holidays[(string)$when]["title"] = $entry->title;
+            }
+
+            if(is_array($holidays[date("Y-m-d")]))
+                echo "holiday";
+            else 
+                echo "Not holiday";
         ?>
             </div>
             <div class="col-2"></div>
