@@ -1,3 +1,56 @@
+<?php
+    require_once __DIR__.'/vendor/autoload.php';
+
+    session_start();
+
+    $client = new Google_Client();
+    $client->setAuthConfig('client_secret_953871450148-1fnnuor3qiecnuaorbkd8ljiu9kqnnlb.apps.googleusercontent.com.json');
+    $client->setScopes(Google_Service_Calendar::CALENDAR_READONLY);
+            
+    if (isset($_SESSION['access_token']) && $_SESSION['access_token']) {
+        $client->setAccessToken($_SESSION['access_token']);
+        $calendarService = new Google_Service_Calendar($client);
+        $holidayCalendarId = "en.usa#holiday@group.v.calendar.google.com";
+        $events = $calendarService->events;
+        $holidayJson = $events->listEvents($holidayCalendarId);
+
+        foreach ($holidayJson['items'] as $items => $property) {
+            echo $property['summary'];
+        }
+        
+    } else {
+        $redirect_uri = 'http://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php';
+        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
+    }
+
+    $date = date($_POST['date-input']);
+    $loan = floatval($_POST['loan-input']);
+    $installment = floatval($_POST['installment-input']);
+    $interest = floatval($_POST['interest-input']);
+    $frequency = $_POST['installment-select'];
+
+    switch ($frequency) {
+        case 'Monthly':
+            $frequency = 12;
+            break;
+
+        case 'Weekly':
+            $frequency = 52;
+            break;
+                
+        default:
+            $frequency = 365;
+            break;
+    }
+
+    $balance = round($loan, 2);
+    $freqinterest = (($interest / 100) / $frequency);
+
+    for ($totalpayments=0; $balance > 0 ; $totalpayments++) { 
+        $newBalance = round(($balance + ($balance * $freqinterest)), 2);
+        $balance = $newBalance - $installment;
+    }
+?>
 <html>
     <head>
         <meta author = "Benjamin A Burgess" />
@@ -29,54 +82,7 @@
         <div class="row">
             <div class="col-2"></div>
             <div class="col-8">Number of payments:
-        <?php
-            $date = date($_POST['date-input']);
-            $loan = round(floatval($_POST['loan-input']), 2);
-            $installment = round(floatval($_POST['installment-input']), 2);
-            $interest = floatval($_POST['interest-input']);
-            $frequency = $_POST['installment-select'];
-
-            switch ($frequency) {
-                case 'Monthly':
-                    $frequency = 12;
-                    break;
-
-                case 'Weekly':
-                    $frequency = 52;
-                    break;
-                
-                default:
-                    $frequency = 365;
-                    break;
-            }
-
-            $balance = $loan;
-            $freqinterest = (($interest / 100) / $frequency);
-
-            for ($totalpayments=0; $balance > 0 ; $totalpayments++) { 
-                    $newBalance = ($balance + ($balance * $freqinterest));
-                    $balance = $newBalance - $installment;
-            }
-            
-            echo $totalpayments;
-
-            // https://www.googleapis.com/calendar/v3/calendars/en.us%40holiday.calendar.google.com/events?key=AIzaSyD_WrkVGqA8L5SUyY1QSHrwSHs_rRScOgU
-            $xml = simplexml_load_file("https://calendar.google.com/calendar/htmlembed?src=en.usa%23holiday%40group.v.calendar.google.com&amp;ctz=America%2FNew_York");
-            $xml->asXML();
-            $holidays = array();
-            
-            foreach ($xml->entry as $entry){
-                $a = $entry->children('http://schemas.google.com/g/2005');
-                $when = $a->when->attributes()->startTime;
-
-                $holidays[(string)$when]["title"] = $entry->title;
-            }
-
-            if(is_array($holidays[date("Y-m-d")]))
-                echo "holiday";
-            else 
-                echo "Not holiday";
-        ?>
+                <? echo $totalpayments; ?>
             </div>
             <div class="col-2"></div>
         </div>
