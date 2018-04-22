@@ -34,16 +34,19 @@
         case 'Monthly':
             $frequency = 12;
             $interval = 'months';
+            $dateInterval = 'M';
             break;
 
         case 'Weekly':
             $frequency = 52;
             $interval = 'weeks';
+            $dateInterval = 'D';
             break;
                 
         default:
             $frequency = 365;
             $interval = 'days';
+            $dateInterval = 'D';
             break;
     }
 
@@ -60,13 +63,39 @@
     $payRemainder = round(($totalCost - ($installment * ($paymentsTotal - 1))), 2);
 
     $dateFormat = 'm-d-Y';
-    $endDate = date($dateFormat, strtotime($date.' + '.$paymentsTotal.' '.$interval));
+    $beginDateAsDate = strtotime($date);
+    $beginDate = new DateTime();
+    $endDate = new DateTime();
+
+    $beginDay = idate('d', $beginDateAsDate);
+    $beginMonth = idate('m', $beginDateAsDate);
+    $beginYear = idate('Y', $beginDateAsDate);
+    $beginDate->setDate($beginYear, $beginMonth, $beginDay);
+
+    $endDate->setDate($beginYear, $beginMonth, $beginDay);
+    $endDate->add(new DateInterval('P'.$paymentsTotal.$dateInterval));
 
     $payPeriod = new DatePeriod(
-        new DateTime($date),
+        $beginDate,
         new DateInterval('P1D'),
-        DateTime::createFromFormat($dateFormat, $endDate)
+        $endDate
     );
+
+    // Check for daily payments then weekends, adjust date of last payment accordingly.
+    if ($frequency == 365) {
+        $weekendDays = 0;
+        foreach($payPeriod as $date){
+            $days = $date->format('D');
+            if ($days == 'Sat') {
+                $weekendDays++;
+            } else if ($days == 'Sun') {
+                $weekendDays++;
+            }
+
+            $endDate->add(new DateInterval('P'.$weekendDays.'D'));
+            // $endDate = $dailyEndDate->format($dateFormat);
+        }
+    }
 
 ?>
 <html>
@@ -100,7 +129,7 @@
         <div class="row">
             <div class="col-2"></div>
             <div class="col-8">
-                <? if(is_nan($paymentsTotal)) {
+                <? if(is_nan($paymentsTotal) || $endDate == '1-31-1970') {
                     echo "<p>The amount of your installments is too low.</br>
                     This loan will never be paid off.</br>
                     Please try again.</p>
@@ -120,7 +149,7 @@
                     echo "<p>Number of payments: ".$paymentsTotal."</br> 
                     Total Cost: ".$totalCost."</br>
                     Final payment will be: ".$payRemainder."</br>
-                    Final payment on ".$endDate."</p>
+                    Final payment on ".$beginDate->format($dateFormat)." ".$endDate->format($dateFormat)."</p>
             </div>
             <div class='col-2'></div>
         </div>
