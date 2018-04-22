@@ -14,9 +14,10 @@
         $events = $calendarService->events;
         $holidayJson = $events->listEvents($holidayCalendarId);
 
-        foreach ($holidayJson['items'] as $items => $property) {
+        /*foreach ($holidayJson['items'] as $items => $property) {
             echo $property['summary'];
         }
+        */
         
     } else {
         $redirect_uri = 'http://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php';
@@ -61,9 +62,9 @@
     $endDate = date("m-d-Y", strtotime($date.' + '.$paymentsTotal.' '.$interval));
 
     $payPeriod = new DatePeriod(
-        new DateTime(date("m-d-Y", strtotime($date))),
+        new DateTime(date("m-d-Y", $date)),
         new DateInterval('P1D'),
-        new DateTime(date("m-d-Y", strtotime($endDate)))
+        new DateTime(date("m-d-Y", $endDate))
     );
 
 ?>
@@ -97,18 +98,38 @@
         <div class="row"></br></div>
         <div class="row">
             <div class="col-2"></div>
-            <div class="col-8">Number of payments:
-                <? echo $paymentsTotal; ?> Total Cost: <? echo $totalCost; ?> Final payment will be: <? echo $payRemainder; ?></br>
-                Final payment on <? echo $endDate; ?>
-            </div>
-            <div class="col-2"></div>
-        </div>
-        <div class="row">
-            <div class="col-2"></div>
             <div class="col-8">
-                <a href="/index.php" class="btn btn-primary">Back</a>
+                <? if(is_nan($paymentsTotal)) {
+                    echo "<p>The amount of your installments is too low.</br>
+                    This loan will never be paid off.</br>
+                    Please try again.</p>
+                    </div>
+            <div class='col-2'></div>
+        </div>
+        <div class='row'>
+            <div class='col-2'></div>
+            <div class='col-8'>
+                <a href='/index.php' class='btn btn-primary'>Back</a>
             </div>
-            <div class="col-2"></div>
+            <div class='col-2'></div>
         </div>
     </body>
-</html>
+</html>";
+                } else {
+                    echo "<p>Number of payments: ".$paymentsTotal."</br> 
+                    Total Cost: ".$totalCost."</br>
+                    Final payment will be: ".$payRemainder."</br>
+                    Final payment on ".$endDate."</p>
+            </div>
+            <div class='col-2'></div>
+        </div>
+        <div class='row'>
+            <div class='col-2'></div>
+            <div class='col-8'>
+                <a href='/index.php' class='btn btn-primary'>Back</a>
+            </div>
+            <div class='col-2'></div>
+        </div>
+    </body>
+</html>";
+                }
