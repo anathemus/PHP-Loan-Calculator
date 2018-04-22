@@ -64,7 +64,7 @@
     $payPeriod = new DatePeriod(
         new DateTime(date("m-d-Y", strtotime($date))),
         new DateInterval('P1D'),
-        new DateTime($endDate)
+        new DateTime($endDate->format('m-d-Y'))
     );
 
 ?>
