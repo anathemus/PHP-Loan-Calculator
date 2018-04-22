@@ -71,7 +71,7 @@
         $payPeriod = new DatePeriod(
         new DateTime($date),
         new DateInterval('P1D'),
-        new DateTime($endDate)
+        new DateTime($endDate->format('m-d-Y'))
     );
     } else {
             $loanFail = true;
