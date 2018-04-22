@@ -6,20 +6,26 @@
     $client = new Google_Client();
     $client->setAuthConfig('client_secret_953871450148-1fnnuor3qiecnuaorbkd8ljiu9kqnnlb.apps.googleusercontent.com.json');
     $client->setScopes(Google_Service_Calendar::CALENDAR_READONLY);
-            
-    if (isset($_SESSION['access_token']) && $_SESSION['access_token']) {
-        $client->setAccessToken($_SESSION['access_token']);
-        $calendarService = new Google_Service_Calendar($client);
-        $holidayCalendarId = "en.usa#holiday@group.v.calendar.google.com";
-        $events = $calendarService->events;
-        $holidayJson = $events->listEvents($holidayCalendarId);
+    
+    try {
+        if (isset($_SESSION['access_token']) && $_SESSION['access_token']) {
+            $client->setAccessToken($_SESSION['access_token']);
+            $calendarService = new Google_Service_Calendar($client);
+            $holidayCalendarId = "en.usa#holiday@group.v.calendar.google.com";
+            $events = $calendarService->events;
+            $holidayJson = $events->listEvents($holidayCalendarId);
 
         /*foreach ($holidayJson['items'] as $items => $property) {
             echo $property['summary'];
         }
         */
         
-    } else {
+        } else {
+            $redirect_uri = 'http://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php';
+            header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
+        }
+    }
+    catch(Exception $e) {
         $redirect_uri = 'http://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php';
         header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
     }
@@ -55,17 +61,23 @@
     $logLMI = -log($LMIInverse);
     $logInterest = log($interestMult);
 
-    $paymentsTotal = round(($logLMI / $logInterest), 0);
-    $totalCost = round((($logLMI / $logInterest) * $installment), 2);
-    $payRemainder = ($totalCost - ($installment * ($paymentsTotal - 1)));
+    if ($LMIInverse > 0) {
+        $paymentsTotal = round(($logLMI / $logInterest), 0, PHP_ROUND_HALF_UP);
+        $totalCost = round((($logLMI / $logInterest) * $installment), 2);
+        $payRemainder = round(($totalCost - ($installment * ($paymentsTotal - 1))), 2);
 
-    $endDate = date("m-d-Y", strtotime($date.' + '.$paymentsTotal.' '.$interval));
+        $endDate = date("m-d-Y", strtotime($date.' + '.$paymentsTotal.' '.$interval));
 
-    $payPeriod = new DatePeriod(
+        $payPeriod = new DatePeriod(
         new DateTime(date("m-d-Y", $date)),
         new DateInterval('P1D'),
         new DateTime(date("m-d-Y", $endDate))
     );
+    } else {
+            $loanFail = true;
+    }
+    
+    
 
 ?>
 <html>
@@ -99,7 +111,7 @@
         <div class="row">
             <div class="col-2"></div>
             <div class="col-8">
-                <? if(is_nan($paymentsTotal)) {
+                <?  if($loanFail == true) {
                     echo "<p>The amount of your installments is too low.</br>
                     This loan will never be paid off.</br>
                     Please try again.</p>
