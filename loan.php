@@ -106,7 +106,6 @@
                 }
 
             $endDate->add(new DateInterval('P'.$weekendDays.'D'));
-            // $endDate = $dailyEndDate->format($dateFormat);
             }
         }
     }
@@ -143,6 +142,7 @@
             <div class="col-2"></div>
             <div class="col-8">
                 <?  if ($loanFail != true) {
+                    $beginNiceMonth = date('F', $beginDateAsDate);
                     echo "<p>Number of payments: ".$paymentsTotal."</br> 
                     Total Cost: ".$totalCost."</br>
                     Final payment will be: ".$payRemainder."</br>
@@ -157,8 +157,77 @@
             </div>
             <div class='col-2'></div>
         </div>
-    </body>
-</html>"; 
+        <table class='table table-bordered'>
+            <thead>
+                <tr>
+                    <th colspan='7' class='col-10 offset-1 bg-success text-center'>".$beginYear."</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th colspan='7' class='col-10 offset-1 bg-primary text-center'>".$beginNiceMonth."</th>
+                </tr>
+                <tr>";
+
+                    //setting up for the for loop for the first week
+                    $beginNiceDay = new DateTime();
+                    $beginNiceDay->setDate($beginYear, $beginMonth, $beginDay);
+
+                    for ($i=0; $i < 7; $i++) {    
+                        echo "<th scope='col' class='bg-light'>".$beginNiceDay->format('l')."</th>";
+                        $beginNiceDay->add(new DateInterval('P1D'));
+                    }
+                    echo "</tr>";
+                    $lastYear = $beginYear;
+                    $lastMonth = $beginMonth;
+                    $lastDay = $beginDay;
+                    $lastWeek = 0;
+
+                    foreach ($payPeriod as $date) {
+                        $year = $date->format('Y');
+                        $month = $date->format('n');
+                        $monthNice = $date->format('F');
+                        $day = $date->format('d');
+                        if ($year > $lastYear) {
+                            echo "<tr>
+                                    <th colspan='7' class='col-10 offset-1 bg-success text-center'>".$year."</th>
+                                </tr>";
+                            
+                            $lastYear = $year;
+                            $lastMonth = 0;
+                        } else if ($month > $lastMonth) {
+                            //set DateTime for month
+
+                            $monthNiceDay = new DateTime();
+                            $monthNiceDay->setDate($year, $month, $day);
+                            
+                            echo "<tr>
+                                    <th colspan='7' class='col-10 offset-1 bg-primary text-center'>".$monthNice."</th>
+                                </tr>
+                                <tr>";
+                                for ($i=0; $i < 7; $i++) { 
+                                    echo "<th scope='col' class='bg-light'>".$monthNiceDay->format('l')."</th>";
+                                    $monthNiceDay->add(new DateInterval('P1D'));
+                                }
+                                echo "</tr>";
+                            $lastMonth = $month;
+                            $lastDay = 0;
+                            $lastWeek = 0;
+                        } else if ($lastWeek == 0) {
+                            echo "<tr>
+                                    <td scope='row'>".$day."</td>";
+                            $lastWeek++;
+                        } else if ($lastWeek == 7) {
+                            echo "</tr>";
+                            $lastWeek = 0;
+                        } else if (($day > $lastDay) && ($lastWeek > 0)) {
+                            echo "<td>".$day."</td>";
+                            $lastDay++;
+                            $lastWeek++;
+                        }
+                    }
+            echo $month.$lastMonth.$lastWeek."</body>
+            </html>";
                 } else {
                     echo "<p>The amount of your installments is too low.</br>
             Installments of $".$installment." are less than</br>
