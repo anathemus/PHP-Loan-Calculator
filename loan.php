@@ -32,24 +32,40 @@
     switch ($frequency) {
         case 'Monthly':
             $frequency = 12;
+            $interval = 'months';
             break;
 
         case 'Weekly':
             $frequency = 52;
+            $interval = 'weeks';
             break;
                 
         default:
             $frequency = 365;
+            $interval = 'days';
             break;
     }
 
-    $balance = round($loan, 2);
+    $loanDivInstallment = ($loan / $installment); 
     $freqinterest = (($interest / 100) / $frequency);
+    $loanMultInterest = ($loanDivInstallment * $freqinterest);
+    $LMIInverse = (1 - $loanMultInterest);
+    $interestMult = (1 + $freqinterest);
+    $logLMI = -log($LMIInverse);
+    $logInterest = log($interestMult);
 
-    for ($totalpayments=0; $balance > 0 ; $totalpayments++) { 
-        $newBalance = round(($balance + ($balance * $freqinterest)), 2);
-        $balance = $newBalance - $installment;
-    }
+    $paymentsTotal = round(($logLMI / $logInterest), 0);
+    $totalCost = round((($logLMI / $logInterest) * $installment), 2);
+    $payRemainder = ($totalCost - ($installment * ($paymentsTotal - 1)));
+
+    $endDate = date("m-d-Y", strtotime($date.' + '.$paymentsTotal.' '.$interval));
+
+    $payPeriod = new DatePeriod(
+        new DateTime(date("m-d-Y", strtotime($date))),
+        new DateInterval('P1D'),
+        new DateTime(date("m-d-Y", strtotime($endDate)))
+    );
+
 ?>
 <html>
     <head>
@@ -82,7 +98,8 @@
         <div class="row">
             <div class="col-2"></div>
             <div class="col-8">Number of payments:
-                <? echo $totalpayments; ?>
+                <? echo $paymentsTotal; ?> Total Cost: <? echo $totalCost; ?> Final payment will be: <? echo $payRemainder; ?></br>
+                Final payment on <? echo $endDate; ?>
             </div>
             <div class="col-2"></div>
         </div>
