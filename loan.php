@@ -69,9 +69,9 @@
         $endDate = date("m-d-Y", strtotime($date.' + '.$paymentsTotal.' '.$interval));
 
         $payPeriod = new DatePeriod(
-        new DateTime(date("m-d-Y", $date)),
+        new DateTime($date),
         new DateInterval('P1D'),
-        new DateTime(date("m-d-Y", $endDate))
+        new DateTime($endDate)
     );
     } else {
             $loanFail = true;
