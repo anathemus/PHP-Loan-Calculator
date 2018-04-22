@@ -6,20 +6,25 @@
     $client = new Google_Client();
     $client->setAuthConfig('client_secret_953871450148-1fnnuor3qiecnuaorbkd8ljiu9kqnnlb.apps.googleusercontent.com.json');
     $client->setScopes(Google_Service_Calendar::CALENDAR_READONLY);
+     
+    try {
+        if (isset($_SESSION['access_token']) && $_SESSION['access_token']) {
+            $client->setAccessToken($_SESSION['access_token']);
+            $calendarService = new Google_Service_Calendar($client);
+            $holidayCalendarId = "en.usa#holiday@group.v.calendar.google.com";
+            $events = $calendarService->events;
+            $holidayJson = $events->listEvents($holidayCalendarId);
+    
+            /*foreach ($holidayJson['items'] as $items => $property) {
+                echo $property['summary'];
+            }
+            */
             
-    if (isset($_SESSION['access_token']) && $_SESSION['access_token']) {
-        $client->setAccessToken($_SESSION['access_token']);
-        $calendarService = new Google_Service_Calendar($client);
-        $holidayCalendarId = "en.usa#holiday@group.v.calendar.google.com";
-        $events = $calendarService->events;
-        $holidayJson = $events->listEvents($holidayCalendarId);
-
-        /*foreach ($holidayJson['items'] as $items => $property) {
-            echo $property['summary'];
+        } else {
+            $redirect_uri = 'http://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php';
+            header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
         }
-        */
-        
-    } else {
+    } catch(Exception $e) {
         $redirect_uri = 'http://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php';
         header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
     }
@@ -42,7 +47,7 @@
             $interval = 'weeks';
             $dateInterval = 'D';
             break;
-                
+            
         default:
             $frequency = 365;
             $interval = 'days';
@@ -50,53 +55,61 @@
             break;
     }
 
-    $loanDivInstallment = ($loan / $installment); 
-    $freqinterest = (($interest / 100) / $frequency);
-    $loanMultInterest = ($loanDivInstallment * $freqinterest);
-    $LMIInverse = (1 - $loanMultInterest);
-    $interestMult = (1 + $freqinterest);
-    $logLMI = -log($LMIInverse);
-    $logInterest = log($interestMult);
+    if ($installment <= ($loan * (($interest / 100) / $frequency))) {
+        $loanFail = true;
+    } else {
 
-    $paymentsTotal = round(($logLMI / $logInterest), 0, PHP_ROUND_HALF_UP);
-    $totalCost = round((($logLMI / $logInterest) * $installment), 2);
-    $payRemainder = round(($totalCost - ($installment * ($paymentsTotal - 1))), 2);
+        $loanDivInstallment = ($loan / $installment); 
+        $freqinterest = (($interest / 100) / $frequency);
+        $loanMultInterest = ($loanDivInstallment * $freqinterest);
+        $LMIInverse = (1 - $loanMultInterest);
+        $interestMult = (1 + $freqinterest);
+        $logLMI = -log($LMIInverse);
+        $logInterest = log($interestMult);
 
-    $dateFormat = 'm-d-Y';
-    $beginDateAsDate = strtotime($date);
-    $beginDate = new DateTime();
-    $endDate = new DateTime();
+        $paymentsTotal = round(($logLMI / $logInterest), 0, PHP_ROUND_HALF_UP);
+        $totalCost = round((($logLMI / $logInterest) * $installment), 2);
+        $payRemainder = round(($totalCost - ($installment * ($paymentsTotal - 1))), 2);
 
-    $beginDay = idate('d', $beginDateAsDate);
-    $beginMonth = idate('m', $beginDateAsDate);
-    $beginYear = idate('Y', $beginDateAsDate);
-    $beginDate->setDate($beginYear, $beginMonth, $beginDay);
+        $dateFormat = 'm-d-Y';
+        $beginDateAsDate = strtotime($date);
+        $beginDate = new DateTime();
+        $endDate = new DateTime();
 
-    $endDate->setDate($beginYear, $beginMonth, $beginDay);
-    $endDate->add(new DateInterval('P'.$paymentsTotal.$dateInterval));
+        $beginDay = idate('d', $beginDateAsDate);
+        $beginMonth = idate('m', $beginDateAsDate);
+        $beginYear = idate('Y', $beginDateAsDate);
+        $beginDate->setDate($beginYear, $beginMonth, $beginDay);
 
-    $payPeriod = new DatePeriod(
-        $beginDate,
-        new DateInterval('P1D'),
-        $endDate
-    );
+        $endDate->setDate($beginYear, $beginMonth, $beginDay);
+        try {
+            $endDate->add(new DateInterval('P'.intval($paymentsTotal).$dateInterval));
+        } catch(Exception $e){
+            echo $e->getMessage();
+            echo gettype($paymentsTotal);
+        }
+        $payPeriod = new DatePeriod(
+            $beginDate,
+            new DateInterval('P1D'),
+            $endDate
+        );
 
-    // Check for daily payments then weekends, adjust date of last payment accordingly.
-    if ($frequency == 365) {
-        $weekendDays = 0;
-        foreach($payPeriod as $date){
-            $days = $date->format('D');
-            if ($days == 'Sat') {
-                $weekendDays++;
-            } else if ($days == 'Sun') {
-                $weekendDays++;
-            }
+        // Check for daily payments then weekends, adjust date of last payment accordingly.
+        if ($frequency == 365) {
+            $weekendDays = 0;
+            foreach($payPeriod as $date){
+                $days = $date->format('D');
+                if ($days == 'Sat') {
+                    $weekendDays++;
+                } else if ($days == 'Sun') {
+                    $weekendDays++;
+                }
 
             $endDate->add(new DateInterval('P'.$weekendDays.'D'));
             // $endDate = $dailyEndDate->format($dateFormat);
+            }
         }
     }
-
 ?>
 <html>
     <head>
@@ -129,23 +142,7 @@
         <div class="row">
             <div class="col-2"></div>
             <div class="col-8">
-                <? if(is_nan($paymentsTotal) || $endDate == '1-31-1970') {
-                    echo "<p>The amount of your installments is too low.</br>
-                    This loan will never be paid off.</br>
-                    Please try again.</p>
-                    </div>
-            <div class='col-2'></div>
-        </div>
-        <div class='row'>
-            <div class='col-2'></div>
-            <div class='col-8'>
-                <a href='/index.php' class='btn btn-primary'>Back</a>
-            </div>
-            <div class='col-2'></div>
-        </div>
-    </body>
-</html>";
-                } else {
+                <?  if ($loanFail != true) {
                     echo "<p>Number of payments: ".$paymentsTotal."</br> 
                     Total Cost: ".$totalCost."</br>
                     Final payment will be: ".$payRemainder."</br>
@@ -161,5 +158,24 @@
             <div class='col-2'></div>
         </div>
     </body>
+</html>"; 
+                } else {
+                    echo "<p>The amount of your installments is too low.</br>
+            Installments of $".$installment." are less than</br>
+            the Interest added ".$frequency." which is ".round(($loan * (($interest / 100) / $frequency)), 2)."</br>
+                    This loan will never be paid off.</br>
+                    Please try again.</p>
+                    </div>
+            <div class='col-2'></div>
+        </div>
+        <div class='row'>
+            <div class='col-2'></div>
+            <div class='col-8'>
+                <a href='/index.php' class='btn btn-primary'>Back</a>
+            </div>
+            <div class='col-2'></div>
+        </div>
+    </body>
 </html>";
-                }
+                }?>
+            
