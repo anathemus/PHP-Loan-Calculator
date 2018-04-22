@@ -59,12 +59,13 @@
     $totalCost = round((($logLMI / $logInterest) * $installment), 2);
     $payRemainder = ($totalCost - ($installment * ($paymentsTotal - 1)));
 
-    $endDate = date("m-d-Y", strtotime($date.' + '.$paymentsTotal.' '.$interval));
+    $dateFormat = 'm-d-Y';
+    $endDate = date($dateFormat, strtotime($date.' + '.$paymentsTotal.' '.$interval));
 
     $payPeriod = new DatePeriod(
         new DateTime($date),
         new DateInterval('P1D'),
-        new DateTime($endDate)
+        DateTime::createFromFormat($dateFormat, $endDate)
     );
 
 ?>
