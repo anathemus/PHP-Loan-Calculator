@@ -1,6 +1,6 @@
 <?php
     require_once __DIR__.'/vendor/autoload.php';
-
+    ob_start();
     session_start();
 
     $client = new Google_Client();
@@ -84,15 +84,44 @@
         $endDate->setDate($beginYear, $beginMonth, $beginDay);
         try {
             $endDate->add(new DateInterval('P'.intval($paymentsTotal).$dateInterval));
+            $endDate->add(new DateInterval('P1D'));
         } catch(Exception $e){
             echo $e->getMessage();
             echo gettype($paymentsTotal);
         }
+
         $payPeriod = new DatePeriod(
             $beginDate,
             new DateInterval('P1D'),
             $endDate
         );
+
+        // no weekly format for DateInterval, using switch statement
+        switch ($frequency) {
+            case '12':
+                $payDates = new DatePeriod(
+                    $beginDate,
+                    new DateInterval('P1M'),
+                    $endDate
+                );
+                break;
+            
+            case '52':
+                $payDates = new DatePeriod(
+                    $beginDate,
+                    new DateInterval('P7D'),
+                    $endDate
+                );
+                break;
+            
+            default:
+                $payDates = new DatePeriod(
+                    $beginDate,
+                    new DateInterval('P1D'),
+                    $endDate
+                );
+                break;
+        }
 
         // Check for daily payments then weekends, adjust date of last payment accordingly.
         if ($frequency == 365) {
@@ -188,6 +217,7 @@
                         $month = $date->format('n');
                         $monthNice = $date->format('F');
                         $day = $date->format('d');
+                        $dateFormatted = $date->format('m-d-Y');
                         if ($year > $lastYear) {
                             echo "<tr>
                                     <th colspan='7' class='col-10 offset-1 bg-success text-center'>".$year."</th>
@@ -215,18 +245,31 @@
                             $lastWeek = 0;
                         } else if ($lastWeek == 0) {
                             echo "<tr>
-                                    <td scope='row'>".$day."</td>";
+                                    <td scope='row' class='".$paymentClass."'id='".$dateFormatted."'>".$day."</td>";
                             $lastWeek++;
                         } else if ($lastWeek == 7) {
                             echo "</tr>";
                             $lastWeek = 0;
                         } else if (($day > $lastDay) && ($lastWeek > 0)) {
-                            echo "<td>".$day."</td>";
+                            echo "<td id='".$dateFormatted."'>".$day."</td>";
                             $lastDay++;
                             $lastWeek++;
                         }
+
+                        // load the dom so as to label payment dates
+                        /* $htmlDoc = ob_get_contents();
+                        $dom = new DOMDocument('1.0');
+                        $dom->loadHTML($htmlDoc);
+
+                        foreach ($payDates as $date) {
+                            $dateFormatted = $date->format('m-d-Y');
+                            $ID = $dom->getElementById($dateFormatted);
+                            $ID->setAttribute("class", "bg-warning");
+                            $ID->appendChild($dom->createTextNode("Payment"));
+                        }
+                        */
                     }
-            echo $month.$lastMonth.$lastWeek."</body>
+            echo "</body>
             </html>";
                 } else {
                     echo "<p>The amount of your installments is too low.</br>
