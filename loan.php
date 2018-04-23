@@ -1,6 +1,7 @@
 <?php
     require_once __DIR__.'/vendor/autoload.php';
-    ob_start();
+    require __DIR__.'/calendar.php';
+
     session_start();
 
     $client = new Google_Client();
@@ -144,12 +145,10 @@
         if ($frequency == 365) {
 
             foreach($payPeriod as $date){
-                $days = $date->format('D');
-                if ($days == 'Sat') {
-                    $endDate->add(new DateInterval('P1D'));
-                } else if ($days == 'Sun') {
+                if (isWeekend($date)) {
                     $endDate->add(new DateInterval('P1D'));
                 }
+            }
 
                 $payPeriod = new DatePeriod(
                     DateTime::createFromFormat('m-d-Y', ($beginDate->format('m-d-Y'))),
@@ -158,7 +157,7 @@
                 );
             }
         }
-    }
+
 ?>
 <html>
     <head>
@@ -207,91 +206,99 @@
             </div>
             <div class='col-2'></div>
         </div>
-        <table class='table table-bordered'>
-            <thead>
-                <tr>
-                    <th colspan='7' class='col-10 offset-1 bg-success text-center'>".$beginYear."</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <th colspan='7' class='col-10 offset-1 bg-primary text-center'>".$beginNiceMonth."</th>
-                </tr>
-                <tr>";
+        </br>
+        <div class='table-responsive'>
+            <table class='table table-bordered col-12'>
+                <thead>
+                    <tr>
+                        <th colspan='7' class='col-10 offset-1 bg-success text-center'>".$beginYear."</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th colspan='7' class='col-10 offset-1 bg-primary text-center'>".$beginNiceMonth."</th>
+                    </tr>
+                    <tr>";
 
-                    //setting up for the for loop for the first week
-                    $beginNiceDay = new DateTime();
-                    $beginNiceDay->setDate($beginYear, $beginMonth, $beginDay);
+                        //setting up for the for loop for the first week
+                        $monthNiceDay = DateTime::createFromFormat('D', 'Sun');
 
-                    for ($i=0; $i < 7; $i++) {    
-                        echo "<th scope='col' class='bg-light'>".$beginNiceDay->format('l')."</th>";
-                        $beginNiceDay->add(new DateInterval('P1D'));
-                    }
-                    echo "</tr>";
-                    $lastYear = $beginYear;
-                    $lastMonth = $beginMonth;
-                    $lastDay = $beginDay;
-                    $lastWeek = 0;
-
-                    foreach ($payPeriod as $date) {
-                        $year = $date->format('Y');
-                        $month = $date->format('n');
-                        $monthNice = $date->format('F');
-                        $day = $date->format('d');
-                        $dateFormatted = $date->format('m-d-Y');
-                        if ($year > $lastYear) {
-                            echo "<tr>
-                                    <th colspan='7' class='col-10 offset-1 bg-success text-center'>".$year."</th>
-                                </tr>";
-                            
-                            $lastYear = $year;
-                            $lastMonth = 0;
-                        } else if ($month > $lastMonth) {
-                            //set DateTime for month
-
-                            $monthNiceDay = new DateTime();
-                            $monthNiceDay->setDate($year, $month, $day);
-                            
-                            echo "<tr>
-                                    <th colspan='7' class='col-10 offset-1 bg-primary text-center'>".$monthNice."</th>
-                                </tr>
-                                <tr>";
-                                for ($i=0; $i < 7; $i++) { 
-                                    echo "<th scope='col' class='bg-light'>".$monthNiceDay->format('l')."</th>";
-                                    $monthNiceDay->add(new DateInterval('P1D'));
-                                }
-                                echo "</tr>";
-                            $lastMonth = $month;
-                            $lastDay = 0;
-                            $lastWeek = 0;
-                        } else if ($lastWeek == 0) {
-                            echo "<tr>
-                                    <td scope='row' class='".$paymentClass."'id='".$dateFormatted."'>".$day."</td>";
-                            $lastWeek++;
-                        } else if ($lastWeek == 7) {
-                            echo "</tr>";
-                            $lastWeek = 0;
-                        } else if (($day > $lastDay) && ($lastWeek > 0)) {
-                            echo "<td id='".$dateFormatted."'>".$day."</td>";
-                            $lastDay++;
-                            $lastWeek++;
+                        for ($i=0; $i < 7; $i++) {    
+                            echo "<th scope='col' class='bg-light'>".$monthNiceDay->format('l')."</th>";
+                            $monthNiceDay->add(new DateInterval('P1D'));
                         }
+                        echo "</tr>";
+                        $lastYear = $beginYear;
+                        $lastMonth = $beginMonth;
+                        $lastDay = $beginDay;
 
-                        // load the dom so as to label payment dates
-                        /* $htmlDoc = ob_get_contents();
-                        $dom = new DOMDocument('1.0');
-                        $dom->loadHTML($htmlDoc);
-
-                        foreach ($payDates as $date) {
+                        foreach ($payPeriod as $date) {
+                            $year = $date->format('Y');
+                            $month = $date->format('n');
+                            $monthNice = $date->format('F');
+                            $day = $date->format('d');
+                            $lDay = $date->format('l');
+                            
                             $dateFormatted = $date->format('m-d-Y');
-                            $ID = $dom->getElementById($dateFormatted);
-                            $ID->setAttribute("class", "bg-warning");
-                            $ID->appendChild($dom->createTextNode("Payment"));
+
+                            if (isWeekend($date)) {
+                                $weekendClass = "class='bg-danger text-light'";
+                            } else {
+                                $weekendClass = "class='table-success'";
+                            }
+
+                            if ($year > $lastYear) {
+                                echo "<tr>
+                                        <th colspan='7' class='col-10 offset-1 bg-success text-center'>".$year."</th>
+                                    </tr>";
+                                
+                                $lastYear = $year;
+                                $lastMonth = 0;
+                            } else if ($month > $lastMonth) {
+                                echo "<tr>
+                                        <th colspan='7' class='col-10 offset-1 bg-primary text-center'>".$monthNice."</th>
+                                    </tr>
+                                    <tr>";
+                                    for ($i=0; $i < 7; $i++) { 
+                                        echo "<th scope='col' class='bg-light'>".$monthNiceDay->format('l')."</th>";
+                                        $monthNiceDay->add(new DateInterval('P1D'));
+                                    }
+                                    echo "</tr>";
+                                $lastMonth = $month;
+                                $lastDay = 0;
+                                
+                            }
+                            
+                            if ($date->format('D') == 'Sun') {
+                                echo "<tr>
+                                        <td scope='row' class='bg-danger text-light' id='".$dateFormatted."'>".$day.$lDay."</td>";
+                            } else if ($date->format('D') == 'Sat') {
+                                echo "<td class='bg-danger text-light' id='".$dateFormatted."'>".$day.$lDay."</td>
+                                </tr>";
+                            } else if ($day > $lastDay) {
+                                
+                                echo "<td id='".$dateFormatted."'>".$day."</td>";
+                                $lastDay++;
+                            } else {
+                                echo "<td>/ </td>";
+                            }
+
+                            // load the dom so as to label payment dates
+                            /* $htmlDoc = ob_get_contents();
+                            $dom = new DOMDocument('1.0');
+                            $dom->loadHTML($htmlDoc);
+
+                            foreach ($payDates as $date) {
+                                $dateFormatted = $date->format('m-d-Y');
+                                $ID = $dom->getElementById($dateFormatted);
+                                $ID->setAttribute("class", "bg-warning");
+                                $ID->appendChild($dom->createTextNode("Payment"));
+                            }
+                            */
                         }
-                        */
-                    }
-            echo "</body>
-            </html>";
+            echo "</div>
+            </body>
+        </html>";
                 } else {
                     echo "<p>The amount of your installments is too low.</br>
             Installments of $".$installment." are less than</br>
