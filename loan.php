@@ -80,40 +80,46 @@
 
         $endDate->setDate($beginYear, $beginMonth, $beginDay);
 
-        //switch to get DateInterval
-        switch ($frequency) {
-            case 12:
-                $dateInterval = '+'.$paymentsTotal.' months';
-                break;
-            
-            case 52:
-                $dateInterval = '+'.$paymentsTotal.' weeks';
-
-            default:
-                $dateInterval = '+'.$paymentsTotal.' days';
-                break;
-        }
-
         try {
-            $endDate->modify($dateInterval);
+            //switch to get DateInterval
+            switch ($frequency) {
+                case 12:
+                    for ($i=0; $i < $paymentsTotal; $i++) { 
+                        $endDate->add(new DateInterval('P1M'));
+                    }
+                    break;
+            
+                case 52:
+                for ($i=0; $i < $paymentsTotal; $i++) { 
+                    $endDate->add(new DateInterval('P1W'));
+                }
+                    break;
+
+                default:
+                for ($i=0; $i < $paymentsTotal; $i++) { 
+                    $endDate->add(new DateInterval('P1D'));
+                }
+                    break;
+        }
+     
         } catch(Exception $e){
             echo $e->getMessage();
             echo gettype($paymentsTotal);
         }
 
         $payPeriod = new DatePeriod(
-            $beginDate,
+            DateTime::createFromFormat('m-d-Y', ($beginDate->format('m-d-Y'))),
             new DateInterval('P1D'),
-            $endDate
+            DateTime::createFromFormat('m-d-Y', ($endDate->format('m-d-Y')))
         );
 
-        // no weekly format for DateInterval, using switch statement
+        // format for DateInterval, using switch statement
         switch ($frequency) {
             case 12:
                 $payDates = new DatePeriod(
-                    $beginDate,
+                    DateTime::createFromFormat('m-d-Y', ($beginDate->format('m-d-Y'))),
                     new DateInterval('P1M'),
-                    $endDate
+                    DateTime::createFromFormat('m-d-Y', ($endDate->format('m-d-Y')))
                 );
                 break;
             
