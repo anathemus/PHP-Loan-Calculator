@@ -39,19 +39,16 @@
         case 'Monthly':
             $frequency = 12;
             $interval = 'months';
-            $dateInterval = 'M';
             break;
 
         case 'Weekly':
             $frequency = 52;
             $interval = 'weeks';
-            $dateInterval = 'D';
             break;
             
         default:
             $frequency = 365;
             $interval = 'days';
-            $dateInterval = 'D';
             break;
     }
 
@@ -82,9 +79,23 @@
         $beginDate->setDate($beginYear, $beginMonth, $beginDay);
 
         $endDate->setDate($beginYear, $beginMonth, $beginDay);
+
+        //switch to get DateInterval
+        switch ($frequency) {
+            case 12:
+                $dateInterval = '+'.$paymentsTotal.' months';
+                break;
+            
+            case 52:
+                $dateInterval = '+'.$paymentsTotal.' weeks';
+
+            default:
+                $dateInterval = '+'.$paymentsTotal.' days';
+                break;
+        }
+
         try {
-            $endDate->add(new DateInterval('P'.intval($paymentsTotal).$dateInterval));
-            $endDate->add(new DateInterval('P1D'));
+            $endDate->modify($dateInterval);
         } catch(Exception $e){
             echo $e->getMessage();
             echo gettype($paymentsTotal);
@@ -98,7 +109,7 @@
 
         // no weekly format for DateInterval, using switch statement
         switch ($frequency) {
-            case '12':
+            case 12:
                 $payDates = new DatePeriod(
                     $beginDate,
                     new DateInterval('P1M'),
@@ -106,10 +117,10 @@
                 );
                 break;
             
-            case '52':
+            case 52:
                 $payDates = new DatePeriod(
                     $beginDate,
-                    new DateInterval('P7D'),
+                    new DateInterval('P1W'),
                     $endDate
                 );
                 break;
