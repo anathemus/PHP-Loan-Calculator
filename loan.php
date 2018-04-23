@@ -142,16 +142,20 @@
 
         // Check for daily payments then weekends, adjust date of last payment accordingly.
         if ($frequency == 365) {
-            $weekendDays = 0;
+
             foreach($payPeriod as $date){
                 $days = $date->format('D');
                 if ($days == 'Sat') {
-                    $weekendDays++;
+                    $endDate->add(new DateInterval('P1D'));
                 } else if ($days == 'Sun') {
-                    $weekendDays++;
+                    $endDate->add(new DateInterval('P1D'));
                 }
 
-            $endDate->add(new DateInterval('P'.$weekendDays.'D'));
+                $payPeriod = new DatePeriod(
+                    DateTime::createFromFormat('m-d-Y', ($beginDate->format('m-d-Y'))),
+                    new DateInterval('P1D'),
+                    DateTime::createFromFormat('m-d-Y', ($endDate->format('m-d-Y')))
+                );
             }
         }
     }
