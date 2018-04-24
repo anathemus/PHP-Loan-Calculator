@@ -28,5 +28,13 @@ session_start();
         header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
     }
 ?>
-<div class="col-4 offset-4">
+<div class="col-4 offset-4 justify-content-center">
+<p>Welcome to the Loan Calculator!</br>
+Created by Benjamin Burgess</br>
+Written in PHP, hosted in Azure</br>
+</br>
+</br>
+Enter here:</br>
+</br>
+<a href='form.php' class='btn btn-primary'>Click Here</a>
 </div>        
