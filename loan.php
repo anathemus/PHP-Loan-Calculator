@@ -1,4 +1,5 @@
 <?php
+    require_once __DIR__.'/header.php';
     require_once __DIR__.'/vendor/autoload.php';
     require __DIR__.'/calendar.php';
 
@@ -280,7 +281,7 @@
                                 echo "<td id='".$dateFormatted."'>".$day."</td>";
                                 $lastDay++;
                             } else {
-                                echo "<td>/ </td>";
+                                echo "<td> </td>";
                             }
 
                             // load the dom so as to label payment dates
