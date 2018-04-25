@@ -15,17 +15,14 @@
     switch ($frequency) {
         case 'Monthly':
             $frequency = 12;
-            $interval = 'months';
             break;
 
         case 'Weekly':
             $frequency = 52;
-            $interval = 'weeks';
             break;
             
         default:
             $frequency = 365;
-            $interval = 'days';
             break;
     }
 
@@ -40,13 +37,9 @@
         $totalCost = round((($logLMI / $logInterest) * $installment), 2);
         $payRemainder = round(($totalCost - ($installment * ($paymentsTotal - 1))), 2);
 
-        
+        $endDate = calculate_initial_end_date($date, $paymentsTotal);
 
-        $payPeriod = new DatePeriod(
-            DateTime::createFromFormat('m-d-Y', ($beginDate->format('m-d-Y'))),
-            new DateInterval('P1D'),
-            DateTime::createFromFormat('m-d-Y', ($endDate->format('m-d-Y')))
-        );
+        $payPeriod = create_pay_period($beginDate, $endDate);
 
         // format for DateInterval, using switch statement
         switch ($frequency) {
@@ -75,22 +68,7 @@
                 break;
         }
 
-        // Check for daily payments then weekends, adjust date of last payment accordingly.
-        if ($frequency == 365) {
-
-            foreach($payPeriod as $date){
-                if (isWeekend($date)) {
-                    $endDate->add(new DateInterval('P1D'));
-                }
-            }
-
-                $payPeriod = new DatePeriod(
-                    DateTime::createFromFormat('m-d-Y', ($beginDate->format('m-d-Y'))),
-                    new DateInterval('P1D'),
-                    DateTime::createFromFormat('m-d-Y', ($endDate->format('m-d-Y')))
-                );
-            }
-        }
+        
 
 ?>
         <div class="row"></br></div>

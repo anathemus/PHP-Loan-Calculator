@@ -146,4 +146,37 @@ function build_html_calendar_month($year, $month, $events = null) {
   {
 
   }
+
+  function create_pay_period($beginDate, $endDate)
+  {
+    $payPeriod = new DatePeriod(
+      $beginDate,
+      new DateInterval('P1D'),
+      $endDate
+    );
+
+    return $payPeriod;
+  }
+
+  function adjust_end_date()
+  {
+    // Check for daily payments then weekends, adjust date of last payment accordingly.
+    if ($frequency == 365) {
+
+      foreach($payPeriod as $date){
+          if (isWeekend($date)) {
+              $endDate->add(new DateInterval('P1D'));
+          }
+      }
+
+      $hArray = getHolidayArray($client, $beginDate, $endDate);
+      
+      $payPeriod = new DatePeriod(
+        DateTime::createFromFormat('m-d-Y', ($beginDate->format('m-d-Y'))),
+        new DateInterval('P1D'),
+        DateTime::createFromFormat('m-d-Y', ($endDate->format('m-d-Y')))
+    );
+          
+    }
+  }
 ?>
