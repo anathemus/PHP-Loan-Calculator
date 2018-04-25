@@ -63,6 +63,8 @@ function build_html_calendar_month($year, $month, $events = null) {
       $draw_event = false;
       if (isset($events) && isset($events[$cur_date])) {
         $draw_event = true;
+      } elseif (isWeekend($cur_date)) {
+        $css_cal_day = "text-danger";
       }
   
       // Day cell
@@ -119,4 +121,29 @@ function build_html_calendar_month($year, $month, $events = null) {
     return $calendar;
   }
 
+  /*
+ * @param $year (Integer) The year, e.g. 2015.
+ * @param $month (Integer) The month, e.g. 7.
+ * @param $events (Array) An array of events where the key is the day's date
+ * in the format "Y-m-d", the value is an array with 'text' and 'link'.
+ * @return (String) The calendar's html.
+ */
+  function calendar_month_title($year, $month, $events)
+  {
+    $dateFromMonth = DateTime::createFromFormat('', $month);
+    $monthNice = $dateFromMonth->format('F');
+
+    $calendar = "<tr>
+            <th colspan='7' class='col-10 offset-1 bg-primary text-center'>".$monthNice."</th>
+          </tr>";
+
+    $calendar .= build_html_calendar_month($year, $month, $events);
+
+    $lastMonth = $month;
+  }
+
+  function create_calendar($beginDate, $endDate, $events)
+  {
+
+  }
 ?>

@@ -2,6 +2,7 @@
     require_once __DIR__.'/header.php';
     require_once __DIR__.'/vendor/autoload.php';
     require __DIR__.'/calendar.php';
+    require __DIR__.'/calculations.php';
     start_google_client();
     display_header();
 
@@ -32,56 +33,14 @@
         $loanFail = true;
     } else {
 
-        $loanDivInstallment = ($loan / $installment); 
-        $freqinterest = (($interest / 100) / $frequency);
-        $loanMultInterest = ($loanDivInstallment * $freqinterest);
-        $LMIInverse = (1 - $loanMultInterest);
-        $interestMult = (1 + $freqinterest);
-        $logLMI = -log($LMIInverse);
-        $logInterest = log($interestMult);
+        $logLMI = log_lmi($loan, $installment, $interest, $frequency);
+        $logInterest = log_interest($interest, $frequency);
 
         $paymentsTotal = round(($logLMI / $logInterest), 0, PHP_ROUND_HALF_UP);
         $totalCost = round((($logLMI / $logInterest) * $installment), 2);
         $payRemainder = round(($totalCost - ($installment * ($paymentsTotal - 1))), 2);
 
-        $dateFormat = 'm-d-Y';
-        $beginDateAsDate = strtotime($date);
-        $beginDate = new DateTime();
-        $endDate = new DateTime();
-
-        $beginDay = idate('d', $beginDateAsDate);
-        $beginMonth = idate('m', $beginDateAsDate);
-        $beginYear = idate('Y', $beginDateAsDate);
-        $beginDate->setDate($beginYear, $beginMonth, $beginDay);
-
-        $endDate->setDate($beginYear, $beginMonth, $beginDay);
-
-        try {
-            //switch to get DateInterval
-            switch ($frequency) {
-                case 12:
-                    for ($i=0; $i < $paymentsTotal; $i++) { 
-                        $endDate->add(new DateInterval('P1M'));
-                    }
-                    break;
-            
-                case 52:
-                for ($i=0; $i < $paymentsTotal; $i++) { 
-                    $endDate->add(new DateInterval('P1W'));
-                }
-                    break;
-
-                default:
-                for ($i=0; $i < $paymentsTotal; $i++) { 
-                    $endDate->add(new DateInterval('P1D'));
-                }
-                    break;
-        }
-     
-        } catch(Exception $e){
-            echo $e->getMessage();
-            echo gettype($paymentsTotal);
-        }
+        
 
         $payPeriod = new DatePeriod(
             DateTime::createFromFormat('m-d-Y', ($beginDate->format('m-d-Y'))),
@@ -188,12 +147,6 @@
                             $lDay = $date->format('l');
                             
                             $dateFormatted = $date->format('m-d-Y');
-
-                            if (isWeekend($date)) {
-                                $weekendClass = "class='bg-danger text-light'";
-                            } else {
-                                $weekendClass = "class='table-success'";
-                            }
 
                             if ($year > $lastYear) {
                                 echo "<tr>

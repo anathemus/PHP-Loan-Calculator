@@ -1,6 +1,8 @@
 <?php 
 require_once __DIR__.'/header.php';
+start_google_client();
 display_header();
+
  ?>
 <div class="row"><div class="col-12"></br></div></div>
         <form action="/loan.php" method="POST">
