@@ -7,23 +7,6 @@ function isWeekend($date) {
     return (($normalized_weekday == "saturday") || ($normalized_weekday == "sunday"));
 }
 
-// function to grab json object from Google Calendar Service
-// by using the begin date and end date as a range
-function getHolidayArray($client, $beginDate, $endDate) {
-  $calendarService = new Google_Service_Calendar($client);
-            $holidayCalendarId = "en.usa#holiday@group.v.calendar.google.com";
-            $events = $calendarService->events;
-            $optParam = array("orderBy"=>"startTime", 
-                                 "singleEvents"=>true, 
-                                 "timeMin"=>($beginDate->format('DATE_RFC3339')) , 
-                                 "timeMax"=>($endDate->format('DATE_RFC3339'))); 
-            $holidayJson = $events->listEvents($holidayCalendarId);
-    
-            /*foreach ($holidayJson['items'] as $items => $property) {
-                echo $property['summary'];
-            }
-            */
-          }
 /**
  * Returns the calendar's html for the given year and month.
  *
@@ -38,7 +21,7 @@ function build_html_calendar_month($year, $month, $events = null) {
     // CSS classes
     $css_cal = 'calendar';
     $css_cal_row = 'calendar-row';
-    $css_cal_day_head = 'calendar-day-head';
+    $css_cal_day_head = 'bg-light';
     $css_cal_day = 'calendar-day';
     $css_cal_day_number = 'day-number';
     $css_cal_day_blank = 'calendar-day-np';
@@ -46,8 +29,11 @@ function build_html_calendar_month($year, $month, $events = null) {
     $css_cal_event = 'calendar-event';
   
     // Table headings
-    $headings = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  
+    $ltrDays = DateTime::createFromFormat('D', 'Sun');
+    for ($i=0; $i < 7; $i++) {
+      $headings  = array($i => $ltrDays->format('D'));
+      $ltrDays->add(new DateInterval('P1D'));
+    }
     // Start: draw table
     $calendar =
       "<table cellpadding='0' cellspacing='0' class='{$css_cal}'>" .

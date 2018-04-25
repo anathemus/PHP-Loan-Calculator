@@ -1,4 +1,7 @@
-<?php require_once __DIR__.'/header.php'; ?>
+<?php 
+require_once __DIR__.'/header.php';
+display_header();
+ ?>
 <div class="row"><div class="col-12"></br></div></div>
         <form action="/loan.php" method="POST">
             <div class="form-group-row align-items-center">
