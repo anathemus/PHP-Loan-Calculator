@@ -1,9 +1,9 @@
 <?php
-    require_once __DIR__.'/header.php';
     require_once __DIR__.'/vendor/autoload.php';
     require __DIR__.'/calendar.php';
     require __DIR__.'/calculations.php';
     require_once __DIR__.'/googleHolidays.php';
+    require_once __DIR__.'/header.php';
 
 
     $date = date($_POST['date-input']);
@@ -81,6 +81,7 @@
         $beginFormatMDY = date_format($beginDate, 'm-d-Y');
         $endFormatMDY = date_format($endDate, 'm-d-Y');
         $events = getHolidayArray($date, $endDate);
+        $payments = payment_dates_events_array($payDates, $installment, $paymentsTotal, $payRemainder);
 
         display_header();
 
@@ -103,8 +104,8 @@
             <div class='col-2'></div>
         </div>
         </br>";
-                
-                create_calendar($date, $endDate, $payPeriod, $events);
+
+                create_calendar($date, $endDate, $payPeriod, $events, $payments);
 
                 } else {
                     echo "<p>The amount of your installments is too low.</br>

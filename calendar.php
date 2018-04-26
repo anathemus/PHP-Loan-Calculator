@@ -28,16 +28,17 @@ function isWeekend($date) {
  * in the format "Y-m-d", the value is an array with 'text' and 'link'.
  * @return (String) The calendar's html.
  */
-function build_html_calendar_month($year, $month, $events = null) {
+function build_html_calendar_month($year, $month, $events = null, $payments) {
+
 
     // CSS classes
     $css_cal = 'calendar';
-    $css_cal_row = 'calendar-row';
+    $css_cal_row = 'container';
     $css_cal_day_head = 'bg-light';
-    $css_cal_day = 'calendar-day';
+    $css_cal_day = 'col-3';
     $css_cal_day_number = 'day-number';
     $css_cal_day_blank = 'calendar-day-np';
-    $css_cal_day_event = 'calendar-day-event';
+    $css_cal_day_event = 'text-danger';
     $css_cal_event = 'calendar-event';
   
     // Table headings
@@ -50,8 +51,8 @@ function build_html_calendar_month($year, $month, $events = null) {
     // Start: draw month contents table
     $calendar =
       "<tr class='{$css_cal_row}'>" .
-      "<td class='{$css_cal_day_head}'>" .
-      implode("</td><td class='{$css_cal_day_head}'>", $headings) .
+      "<td scope='col' class='{$css_cal_day_head}'>" .
+      implode("</td><td scope='col' class='{$css_cal_day_head}'>", $headings) .
       "</td>" .
       "</tr>";
   
@@ -72,7 +73,20 @@ function build_html_calendar_month($year, $month, $events = null) {
   
       // Check if there is an event today
       $cur_date = date('Y-m-d', mktime(0, 0, 0, $month, $day, $year));
+      // reformat payments to match
+      // $paymentKey = key($payments);
+      // $cur_payment = new DateTime($paymentKey);
+      // $cur_pay_format = date_format($cur_payment, 'Y-m-d');
       $draw_event = false;
+      $draw_payment = false;
+      
+      print_r($payments[$cur_date]);
+
+      // if ( == $cur_date) {
+      //   $draw_payment = true;
+        
+      // }
+      
       if (isset($events) && isset($events[$cur_date])) {
         $draw_event = true;
       } elseif (isWeekend($cur_date)) {
@@ -80,11 +94,19 @@ function build_html_calendar_month($year, $month, $events = null) {
       } elseif (!isWeekend($cur_date)) {
         $css_cal_day = "text-dark";
       }
-  
-      // Day cell
-      $calendar .= $draw_event ?
+      // Beginning of the row
+      if ($running_day == 1) {
+        $calendar .= $draw_event ?
+        "<td scope='row' class='{$css_cal_day} {$css_cal_day_event}'>" :
+        "<td scope='row' class='{$css_cal_day}'>";
+      } else {
+        // Day cell
+        $calendar .= $draw_event ?
         "<td class='{$css_cal_day} {$css_cal_day_event}'>" :
         "<td class='{$css_cal_day}'>";
+      }
+
+      
   
       // Add the day number
       $calendar .= "<div class='{$css_cal_day_number}'>" . $day . "</div>";
@@ -98,7 +120,16 @@ function build_html_calendar_month($year, $month, $events = null) {
           "</a>" .
           "</div>";
       }
-  
+
+      // Insert a payment for this day
+      if ($draw_payment) {
+        $calendar .=
+          "<div class='{$css_cal_event}'>" .
+          "<a href='{$payments[$cur_date]['href']}'>" .
+          $payments[$cur_date]['text'] .
+          "</a>" .
+          "</div>";
+      }
       // Close day cell
       $calendar .= "</td>";
   
@@ -139,8 +170,9 @@ function build_html_calendar_month($year, $month, $events = null) {
  * in the format "Y-m-d", the value is an array with 'text' and 'link'.
  * @return (String) The calendar's html.
  */
-  function calendar_month_title($year, $month, $events)
+  function calendar_month_title($year, $month, $events, $payments)
   {
+    
     $dateFromMonth = DateTime::createFromFormat('m', $month);
     $monthNice = date_format($dateFromMonth, 'F');
 
@@ -148,13 +180,14 @@ function build_html_calendar_month($year, $month, $events = null) {
             <th colspan='7' class='col-10 offset-1 bg-primary text-center'>".$monthNice."</th>
           </tr>";
 
-    build_html_calendar_month($year, $month, $events);
+    build_html_calendar_month($year, $month, $events, $payments);
 
     $lastMonth = $month;
   }
 
-  function create_calendar($date, $endDate, $payPeriod, $events)
+  function create_calendar($date, $endDate, $payPeriod, $events, $payments)
   {
+    
     $beginDate = new DateTime($date);
     $previousYear = intval(date_format($beginDate, 'Y'));
     $previousMonth = intval(date_format($beginDate, 'm'));
@@ -181,7 +214,7 @@ function build_html_calendar_month($year, $month, $events = null) {
         }
         // do nothing until the year changes
       } else {
-        create_year($year, $monthArr, $events);
+        create_year($year, $monthArr, $events, $payments);
         $previousYear = $year;
         unset($monthArr);
         $monthArr = array();
@@ -192,7 +225,7 @@ function build_html_calendar_month($year, $month, $events = null) {
 
     // if all dates are in the same year, display the year
     if ($year == (intval(date_format($beginDate, 'Y'))) && intval(date_format($endDate, 'Y'))) {
-      create_year($year, $monthArr, $events);
+      create_year($year, $monthArr, $events, $payments);
     }
       echo "</table>
                 </div>";
@@ -200,14 +233,14 @@ function build_html_calendar_month($year, $month, $events = null) {
 
   }
 
-  function create_year($year, $monthArr, $events)
+  function create_year($year, $monthArr, $events, $payments)
   {
     echo "<tr>
             <th colspan='7' class='col-10 offset-1 bg-success text-center'>".$year."</th>
           </tr>";
-          echo count($monthArr);
+
     foreach ($monthArr as $month) {
-      calendar_month_title($year, $month, $events);
+      calendar_month_title($year, $month, $events, $payments);
     }
 
   }

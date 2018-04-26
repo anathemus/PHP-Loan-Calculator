@@ -1,6 +1,14 @@
 <?php
 require_once __DIR__.'/vendor/autoload.php';
-require_once __DIR__.'/header.php';
+
+// function to catch uncaught exceptions
+function exception_handler(Exception $e)
+{
+
+    $redirect_uri = 'http://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php';
+}
+
+set_exception_handler('exception_handler');
 
 function start_google_client() {
     session_start();
@@ -28,6 +36,10 @@ function start_google_client() {
 
     return $client;
 }
+
+
+
+
 // function to grab json object from Google Calendar Service
 // by using the begin date and end date as a range
 function getHolidayArray($date, $endDate) {
@@ -52,7 +64,7 @@ function getHolidayArray($date, $endDate) {
             $holidayJson = $events->listEvents($holidayCalendarId, $optParams);
     
             foreach ($holidayJson['items'] as $items => $property) {
-                $holiday = array($property['start.date'] => array('text' => $property['summary'], 'link' => '#'));
+                $holiday = array($property['start']['date'] => array('text' => $property['summary'], 'link' => '#'));
             }
             return $holiday;
           }

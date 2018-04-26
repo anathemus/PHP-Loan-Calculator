@@ -50,4 +50,18 @@ function calculate_initial_end_date($date, $paymentsTotal, $frequency) {
         return $endDate;
         echo $endDate->format('m-d-Y');
 }
+
+function payment_dates_events_array($payDates, $installment, $paymentsTotal, $payRemainder)
+{
+    $payments = array();
+    $installmentText = 'Payment Due: '.$installment;
+    $paymentsPropArray = array(array('text' => $installmentText, 'link' => '#'));
+    foreach ($payDates as $date) {
+
+        $thisDate = date_format($date, 'Y-d-m');
+        $payments[$thisDate] = $paymentsPropArray;
+    }
+
+    return $payments;
+}
 ?>

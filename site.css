@@ -36,3 +36,8 @@ body
 {
     height: 1em;
 }
+
+table
+{
+    table-layout: fixed;
+}

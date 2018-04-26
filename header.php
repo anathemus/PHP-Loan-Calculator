@@ -1,7 +1,10 @@
 <?php
 
+require_once __DIR__.'/vendor/autoload.php';
+
 function display_header() {
-echo "<html>
+
+    echo "<html>
     <head>
         <meta author = 'Benjamin A Burgess' />
         <meta charset='utf-8' />
