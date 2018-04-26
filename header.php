@@ -20,6 +20,8 @@ function start_google_client() {
         $redirect_uri = 'http://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php';
         header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
     }
+
+    return $client;
 }
 
 function display_header() {

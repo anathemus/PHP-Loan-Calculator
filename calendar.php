@@ -1,11 +1,24 @@
 <?php
 
 function isWeekend($date) {
-    $weekday= $date->format('l');
+    $isWeekday = new DateTime($date);
+    $weekday= date_format($isWeekday, 'l');
     $normalized_weekday = strtolower($weekday);
 
     return (($normalized_weekday == "saturday") || ($normalized_weekday == "sunday"));
 }
+
+// // sets the beginning date as DateTime object
+// function setBeginDate($date)
+// {
+//   $beginYear = intval(strtotime($date))->format('Y');
+//   $beginMonth = intval(strtotime($date))->format('m');
+//   $beginDay = intval(strtotime($date))->format('d');
+//   $beginDate = new DateTime();
+//   $beginDate->date_create_from_format('m-d-Y', $date);
+
+//   return $beginDate;
+// }
 
 /**
  * Returns the calendar's html for the given year and month.
@@ -16,7 +29,7 @@ function isWeekend($date) {
  * in the format "Y-m-d", the value is an array with 'text' and 'link'.
  * @return (String) The calendar's html.
  */
-function build_html_calendar_month($year, $month, $events = null) {
+function build_html_calendar_month($year, $month, $events = null, $calendar) {
 
     // CSS classes
     $css_cal = 'calendar';
@@ -35,7 +48,7 @@ function build_html_calendar_month($year, $month, $events = null) {
       $ltrDays->add(new DateInterval('P1D'));
     }
     // Start: draw table
-    $calendar =
+    $calendar .=
       "<table cellpadding='0' cellspacing='0' class='{$css_cal}'>" .
       "<tr class='{$css_cal_row}'>" .
       "<td class='{$css_cal_day_head}'>" .
@@ -128,29 +141,69 @@ function build_html_calendar_month($year, $month, $events = null) {
  * in the format "Y-m-d", the value is an array with 'text' and 'link'.
  * @return (String) The calendar's html.
  */
-  function calendar_month_title($year, $month, $events)
+  function calendar_month_title($year, $month, $events, $calendar)
   {
-    $dateFromMonth = DateTime::createFromFormat('', $month);
-    $monthNice = $dateFromMonth->format('F');
+    $dateFromMonth = DateTime::createFromFormat('m', $month);
+    $monthNice = date_format($dateFromMonth, 'F');
 
-    $calendar = "<tr>
+    $calendar .= "<tr>
             <th colspan='7' class='col-10 offset-1 bg-primary text-center'>".$monthNice."</th>
           </tr>";
 
-    $calendar .= build_html_calendar_month($year, $month, $events);
+    $calendar .= build_html_calendar_month($year, $month, $events, $calendar);
 
     $lastMonth = $month;
+    return $calendar;
   }
 
-  function create_calendar($beginDate, $endDate, $events)
+  function create_calendar($date, $endDate, $payPeriod, $events)
   {
+    $beginDate = new DateTime($date);
+    $previousYear = intval(date_format($beginDate, 'Y'));
+    $previousMonth = intval(date_format($beginDate, 'm'));
+    $lastYear = intval($endDate->format('Y'));
+    $lastMonth = intval($endDate->format('n'));
+    $monthArr = array();
+    $calendar = "<div class='table-responsive'>
+    <table class='table table-bordered col-12'>";
+    foreach ($payPeriod as $date) {
+      $year = intval($date->format('Y'));
+      if ($year == $previousYear) {
 
+        $month = intval($date->format('n'));
+        if ($month == $previousMonth) {
+          // do nothing until the month changes
+        } else {
+          $monthArr[] = $month;
+          $previousMonth = $month;
+        }
+        // do nothing until the year changes
+      } else {
+        $calendar .= create_year($year, $monthArr, $events, $calendar);
+        $previousYear = $year;
+      }
+      $calendar .= "</div>
+                  </table>";
+    }
+    return $calendar;
   }
 
-  function create_pay_period($beginDate, $endDate)
+  function create_year($year, $monthArr, $events, $calendar)
+  {
+    $calendar .= "<tr>
+            <th colspan='7' class='col-10 offset-1 bg-success text-center'>".$year."</th>
+          </tr>";
+    foreach ($monthArr as $month) {
+      $calendar .= calendar_month_title($year, $month, $events, $calendar);
+    }
+
+    return $calendar;
+  }
+
+  function create_pay_period($date, $endDate)
   {
     $payPeriod = new DatePeriod(
-      $beginDate,
+      new DateTime($date),
       new DateInterval('P1D'),
       $endDate
     );
@@ -158,7 +211,7 @@ function build_html_calendar_month($year, $month, $events = null) {
     return $payPeriod;
   }
 
-  function adjust_end_date()
+  function adjust_end_date($payPeriod, $beginDate, $endDate, $client)
   {
     // Check for daily payments then weekends, adjust date of last payment accordingly.
     if ($frequency == 365) {
@@ -170,13 +223,15 @@ function build_html_calendar_month($year, $month, $events = null) {
       }
 
       $hArray = getHolidayArray($client, $beginDate, $endDate);
-      
-      $payPeriod = new DatePeriod(
-        DateTime::createFromFormat('m-d-Y', ($beginDate->format('m-d-Y'))),
-        new DateInterval('P1D'),
-        DateTime::createFromFormat('m-d-Y', ($endDate->format('m-d-Y')))
-    );
-          
+
+      foreach ($hArray as $holiday) {
+        if (!isWeekend(strtotime($holiday)))
+        {
+          $endDate->add(new DateInterval('P1D'));
+        }
+      }
     }
+    
+    return $endDate;
   }
 ?>

@@ -16,18 +16,9 @@ function log_interest($interest, $frequency) {
     return log($interestMult);
 }
 
-function calculate_initial_end_date($date, $paymentsTotal) {
-    $dateFormat = 'm-d-Y';
-        $beginDateAsDate = strtotime($date);
-        $beginDate = new DateTime();
-        $endDate = new DateTime();
-
-        $beginDay = idate('d', $beginDateAsDate);
-        $beginMonth = idate('m', $beginDateAsDate);
-        $beginYear = idate('Y', $beginDateAsDate);
-        $beginDate->setDate($beginYear, $beginMonth, $beginDay);
-
-        $endDate->setDate($beginYear, $beginMonth, $beginDay);
+function calculate_initial_end_date($date, $paymentsTotal, $frequency) {
+    
+        $endDate = new DateTime($date);
 
         try {
             //switch to get DateInterval
@@ -50,11 +41,13 @@ function calculate_initial_end_date($date, $paymentsTotal) {
                 }
                     break;
                 
-                return $endDate;
+                
         }
-     
+
         } catch(Exception $e){
             echo $e->getMessage();
         }
+        return $endDate;
+        echo $endDate->format('m-d-Y');
 }
 ?>
