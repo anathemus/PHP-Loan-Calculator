@@ -1,6 +1,6 @@
 <?php 
 require_once __DIR__.'/header.php';
-start_google_client();
+
 display_header();
 
  ?>

@@ -4,8 +4,7 @@
     require __DIR__.'/calendar.php';
     require __DIR__.'/calculations.php';
     require_once __DIR__.'/googleHolidays.php';
-    start_google_client();
-    display_header();
+
 
     $date = date($_POST['date-input']);
     $loan = floatval($_POST['loan-input']);
@@ -81,6 +80,9 @@
 
         $beginFormatMDY = date_format($beginDate, 'm-d-Y');
         $endFormatMDY = date_format($endDate, 'm-d-Y');
+        $events = getHolidayArray($date, $endDate);
+
+        display_header();
 
         echo "<div class='row'></br></div>
         <div class='row'>
@@ -102,10 +104,7 @@
         </div>
         </br>";
                 
-                $events = getHolidayArray($client, $date, $endDate);
-                $calendar = create_calendar($date, $endDate, $payPeriod, $events);
-                
-                echo $calendar;
+                create_calendar($date, $endDate, $payPeriod, $events);
 
                 } else {
                     echo "<p>The amount of your installments is too low.</br>
