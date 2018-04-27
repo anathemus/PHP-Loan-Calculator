@@ -1,13 +1,6 @@
 <?php
 require_once __DIR__.'/vendor/autoload.php';
 
-// function to catch uncaught exceptions
-function exception_handler(Exception $e)
-{
-
-    $redirect_uri = 'http://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php';
-}
-
 set_exception_handler('exception_handler');
 
 function start_google_client() {
@@ -37,8 +30,15 @@ function start_google_client() {
     return $client;
 }
 
-
-
+// function to catch uncaught exceptions
+function exception_handler($e)
+{
+    echo $e->getMessage();
+    $redirect_uri = 'http://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php';
+    if (!(getallheaders())) {
+        header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
+    }
+}
 
 // function to grab json object from Google Calendar Service
 // by using the begin date and end date as a range
@@ -62,9 +62,11 @@ function getHolidayArray($date, $endDate) {
                 'timeMax' => $endGoogleDate
               ); 
             $holidayJson = $events->listEvents($holidayCalendarId, $optParams);
-    
+            $holiday = array();
             foreach ($holidayJson['items'] as $items => $property) {
-                $holiday = array($property['start']['date'] => array('text' => $property['summary'], 'link' => '#'));
+                $DTstart = new DateTime($property['start']['date']);
+                $startDate = $DTstart->format('Y-m-d');
+                $holiday[$startDate] = array('text' => $property['summary'], 'link' => '#');
             }
             return $holiday;
           }

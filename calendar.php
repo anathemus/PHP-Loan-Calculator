@@ -73,23 +73,23 @@ function build_html_calendar_month($year, $month, $events = null, $payments) {
   
       // Check if there is an event today
       $cur_date = date('Y-m-d', mktime(0, 0, 0, $month, $day, $year));
-      // reformat payments to match
-      // $paymentKey = key($payments);
-      // $cur_payment = new DateTime($paymentKey);
-      // $cur_pay_format = date_format($cur_payment, 'Y-m-d');
+     
       $draw_event = false;
       $draw_payment = false;
       
-      print_r($payments[$cur_date]);
-
-      // if ( == $cur_date) {
-      //   $draw_payment = true;
-        
-      // }
+      // print_r($payments[$cur_date]);
+      if (isset($payments[$cur_date])) {
+        $draw_payment = true;
+      }
       
+      // print_r($payments['$cur_date']);
+      // echo $payments[$cur_date]['href'];
+
       if (isset($events) && isset($events[$cur_date])) {
         $draw_event = true;
-      } elseif (isWeekend($cur_date)) {
+      } 
+      
+      if (isWeekend($cur_date)) {
         $css_cal_day = "text-danger";
       } elseif (!isWeekend($cur_date)) {
         $css_cal_day = "text-dark";
@@ -121,15 +121,16 @@ function build_html_calendar_month($year, $month, $events = null, $payments) {
           "</div>";
       }
 
-      // Insert a payment for this day
+      //Insert a payment for this day
       if ($draw_payment) {
         $calendar .=
           "<div class='{$css_cal_event}'>" .
-          "<a href='{$payments[$cur_date]['href']}'>" .
-          $payments[$cur_date]['text'] .
+          "<a href='{$payments[$cur_date][0]['link']}'>" .
+          $payments[$cur_date][0]['text'] .
           "</a>" .
           "</div>";
       }
+
       // Close day cell
       $calendar .= "</td>";
   
@@ -193,14 +194,18 @@ function build_html_calendar_month($year, $month, $events = null, $payments) {
     $previousMonth = intval(date_format($beginDate, 'm'));
     $lastYear = intval($endDate->format('Y'));
     $lastMonth = intval($endDate->format('n'));
-    $monthArr = array();
+    
     // assign year and month 'check' variables first to make it easier on the computing.
     $year = intval(date_format($beginDate, 'Y'));
     $month = intval(date_format($beginDate, 'm'));
-    $monthArr[] = $month;
+
 
     echo "<div class='table-responsive'>
     <table class='table table-bordered col-12'>";
+    // initial Year before the loop
+    create_year($year);
+    //initial Month before the loop
+    calendar_month_title($year, $month, $events, $payments);
 
     foreach ($payPeriod as $date) {
       $year = intval($date->format('Y'));
@@ -208,23 +213,20 @@ function build_html_calendar_month($year, $month, $events = null, $payments) {
         $month = intval($date->format('n'));
         if ($month == $previousMonth) {
           // do nothing until the month changes
-        } else {
-          $monthArr[] = $month;
+        } elseif ($month > $previousMonth) {
+          calendar_month_title($year, $month, $events, $payments);
           $previousMonth = $month;
         }
-        // do nothing until the year changes
-      } else {
-        create_year($year, $monthArr, $events, $payments);
+      } elseif ($year > $previousYear) {
+        create_year($year);
         $previousYear = $year;
-        unset($monthArr);
-        $monthArr = array();
-        $monthArr[] = $month;
+        $previousMonth = 0;
       }
     
     }
 
     // if all dates are in the same year, display the year
-    if ($year == (intval(date_format($beginDate, 'Y'))) && intval(date_format($endDate, 'Y'))) {
+    if (intval(date_format($beginDate, 'Y')) == intval(date_format($endDate, 'Y'))) {
       create_year($year, $monthArr, $events, $payments);
     }
       echo "</table>
@@ -233,16 +235,11 @@ function build_html_calendar_month($year, $month, $events = null, $payments) {
 
   }
 
-  function create_year($year, $monthArr, $events, $payments)
+  function create_year($year)
   {
     echo "<tr>
             <th colspan='7' class='col-10 offset-1 bg-success text-center'>".$year."</th>
           </tr>";
-
-    foreach ($monthArr as $month) {
-      calendar_month_title($year, $month, $events, $payments);
-    }
-
   }
 
   function create_pay_period($date, $endDate)

@@ -51,17 +51,35 @@ function calculate_initial_end_date($date, $paymentsTotal, $frequency) {
         echo $endDate->format('m-d-Y');
 }
 
-function payment_dates_events_array($payDates, $installment, $paymentsTotal, $payRemainder)
+function payment_dates_events_array($payDates, $installment, $endDate, $payRemainder)
 {
     $payments = array();
-    $installmentText = 'Payment Due: '.$installment;
+    $endDateFormatYMD = date_format($endDate, 'Y-m-d');
+    $installmentText = 'Payment Due: $'.$installment;
+    $finalInstallmentText = 'Final Payment Due: $'.$payRemainder;
     $paymentsPropArray = array(array('text' => $installmentText, 'link' => '#'));
     foreach ($payDates as $date) {
-
-        $thisDate = date_format($date, 'Y-d-m');
-        $payments[$thisDate] = $paymentsPropArray;
+        // check for weekends, add days until not weekend
+        $wDate = date_format($date, 'Y-m-d');
+        if (isWeekend($wDate)) {
+            $wDate = add_day($wDate);
+        }
+        if (isWeekend($wDate)) {
+            $wDate = add_day($wDate);
+        }
+        $payments[$wDate] = $paymentsPropArray;
     }
+    $payments[$endDateFormatYMD] = array(array('text' => $finalInstallmentText, 'link' => '#'));
 
     return $payments;
+}
+
+function add_day($wDate)
+{
+    $DTdate = new DateTime($wDate);
+    $DTdate->add(new DateInterval('P1D'));
+    $addedDate = $DTdate->format('Y-m-d');
+
+    return $addedDate;
 }
 ?>

@@ -81,7 +81,7 @@
         $beginFormatMDY = date_format($beginDate, 'm-d-Y');
         $endFormatMDY = date_format($endDate, 'm-d-Y');
         $events = getHolidayArray($date, $endDate);
-        $payments = payment_dates_events_array($payDates, $installment, $paymentsTotal, $payRemainder);
+        $payments = payment_dates_events_array($payDates, $installment, $endDate, $payRemainder);
 
         display_header();
 
@@ -92,7 +92,8 @@
                     echo "<p>Number of payments: ".$paymentsTotal."</br> 
                     Total Cost: ".$totalCost."</br>
                     Final payment will be: ".$payRemainder."</br>
-                    Final payment on ".$beginFormatMDY." ".$endFormatMDY."</p>
+                    First payment on ".$beginFormatMDY."</br>
+                    Final payment on ".$endFormatMDY."</p>
             </div>
             <div class='col-2'></div>
         </div>
