@@ -77,8 +77,11 @@ function build_html_calendar_month($year, $month, $events = null, $payments) {
       $draw_event = false;
       $draw_payment = false;
       
-      // print_r($payments[$cur_date]);
-      if (isset($payments[$cur_date])) {
+      //if there's a conflict with a holiday, pay the next day.
+      if (isset($payments[$cur_date]) && isset($events[$cur_date])) {
+        $draw_event = true;
+        $payments[add_day($cur_date)] = $payments[$cur_date];
+      } elseif (isset($payments[$cur_date])) {
         $draw_payment = true;
       }
       
@@ -223,11 +226,6 @@ function build_html_calendar_month($year, $month, $events = null, $payments) {
         $previousMonth = 0;
       }
     
-    }
-
-    // if all dates are in the same year, display the year
-    if (intval(date_format($beginDate, 'Y')) == intval(date_format($endDate, 'Y'))) {
-      create_year($year, $monthArr, $events, $payments);
     }
       echo "</table>
                 </div>";
